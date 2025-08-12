@@ -1,0 +1,64 @@
+{% extends "admin/layout.html" %}
+
+{% block admin_content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="bi bi-image me-2"></i>Riwayat Prediksi</h5>
+      <input id="predSearch" type="search" class="form-control form-control-sm w-auto" placeholder="Cari...">
+    </div>
+    <div class="table-responsive">
+      <table id="predTable" class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Gambar</th>
+            <th>Label</th>
+            <th>Confidence</th>
+            <th>User</th>
+            <th>Waktu</th>
+            <th class="text-end">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in preds %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>
+              <a href="{{ url_for('main.uploaded_file', filename=p.filename) }}" target="_blank">
+                <img src="{{ url_for('main.uploaded_file', filename=p.filename) }}"
+                     alt="img" style="height:48px;width:48px;object-fit:cover;border-radius:.5rem;">
+              </a>
+            </td>
+            <td><span class="badge text-bg-primary">{{ p.label }}</span></td>
+            <td>{{ '%.3f'|format(p.confidence) }}</td>
+            <td>{{ p.user.email if p.user else '-' }}</td>
+            <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') if p.created_at else '-' }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('admin.predictions_delete', pid=p.id) }}"
+                    onsubmit="return confirm('Hapus riwayat ini?');">
+                {{ form.csrf_token }}
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Hapus</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const q2 = document.getElementById('predSearch');
+  const rows2 = () => document.querySelectorAll('#predTable tbody tr');
+  q2?.addEventListener('input', () => {
+    const v = q2.value.toLowerCase();
+    rows2().forEach(tr => {
+      tr.style.display = tr.innerText.toLowerCase().includes(v) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}

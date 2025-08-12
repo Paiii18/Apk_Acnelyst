@@ -1,0 +1,72 @@
+{% extends "admin/layout.html" %}
+{% block admin_content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0"><i class="bi bi-people me-2"></i>Kelola Pengguna</h5>
+      <input id="userSearch" type="search" class="form-control form-control-sm w-auto" placeholder="Cari...">
+    </div>
+    <div class="table-responsive">
+      <table id="usersTable" class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th><th>Nama</th><th>Email</th><th>Role</th><th>Dibuat</th><th class="text-end">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              {% if u.is_admin %}
+                <span class="badge text-bg-success"><i class="bi bi-shield-check me-1"></i>Admin</span>
+              {% else %}
+                <span class="badge text-bg-secondary">User</span>
+              {% endif %}
+            </td>
+            <td>{{ u.created_at.strftime("%Y-%m-%d %H:%M") if u.created_at else "-" }}</td>
+            <td class="text-end">
+              {% if not u.is_admin %}
+                <form method="post" action="{{ url_for('admin.promote_user', user_id=u.id) }}" class="d-inline">
+                  {{ form.csrf_token }}
+                  <button class="btn btn-sm btn-outline-success"><i class="bi bi-arrow-up-circle me-1"></i>Jadikan Admin</button>
+                </form>
+              {% else %}
+                <form method="post" action="{{ url_for('admin.demote_user', user_id=u.id) }}" class="d-inline">
+                  {{ form.csrf_token }}
+                  <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-down-circle me-1"></i>Turunkan</button>
+                </form>
+              {% endif %}
+              {% if u.id != current_user.id %}
+                <form method="post" action="{{ url_for('admin.delete_user', user_id=u.id) }}"
+                      class="d-inline ms-1" onsubmit="return confirm('Hapus pengguna ini?');">
+                  {{ form.csrf_token }}
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Hapus</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Filter baris table sederhana
+  const q = document.getElementById('userSearch');
+  const rows = () => document.querySelectorAll('#usersTable tbody tr');
+  q?.addEventListener('input', () => {
+    const v = q.value.toLowerCase();
+    rows().forEach(tr => {
+      tr.style.display = tr.innerText.toLowerCase().includes(v) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}
+

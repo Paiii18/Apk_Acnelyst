@@ -10,6 +10,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    predictions = db.relationship("Prediction", backref="user", lazy=True)
+
 
     def set_password(self, raw_password: str):
         self.password_hash = generate_password_hash(raw_password)
